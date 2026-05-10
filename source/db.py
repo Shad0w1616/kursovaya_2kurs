@@ -15,13 +15,11 @@ def init_and_populate_db(db_path=None):
     c.execute('''CREATE TABLE IF NOT EXISTS ker_diff (
                  x INTEGER, y INTEGER, diff INTEGER, ker INTEGER,
                  PRIMARY KEY (x, y))''')
-    
-    # Заполнение 1D
+
     fibs = fib_mod_sequence(1500, 100)
     for i, v in enumerate(fibs):
         c.execute("INSERT OR IGNORE INTO fib VALUES (?, ?)", (i, v))
     
-    # Заполнение 2D (50x50 = 2500 записей)
     for x in range(1, 51):
         for y in range(1, 51):
             diff = abs(x*x - y*y)

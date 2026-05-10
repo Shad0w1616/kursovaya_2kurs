@@ -7,7 +7,7 @@ from source.config import TITLE, VERSION
 from source.db import init_and_populate_db
 from source.form_1d import Form1D
 from source.form_2d import Form2D
-from data.hmm_models import get_hmm_color  # ← Переехала в data/
+from data.hmm_models import get_hmm_color  
 
 # Базовые пути
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -20,12 +20,10 @@ class MainWindow:
         self.root.title(TITLE)
         self.root.geometry("900x620")
         self.current_db = os.path.join(DB_DIR, "hmm_data.db")
-
-        # ==================== ГЛАВНОЕ МЕНЮ ====================
+        #Menu
         menubar = tk.Menu(self.root)
         self.root.config(menu=menubar)
 
-        # Меню Данные
         data_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="Данные", menu=data_menu)
         data_menu.add_command(label="Создать новую БД", 
@@ -35,7 +33,6 @@ class MainWindow:
         data_menu.add_separator()
         data_menu.add_command(label="Выход", command=self.root.quit, accelerator="Ctrl+Q")
 
-        # Меню Визуализация
         vis_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="Визуализация", menu=vis_menu)
         vis_menu.add_command(label="1D — Числа Фибоначчи по модулю", 
@@ -43,7 +40,6 @@ class MainWindow:
         vis_menu.add_command(label="2D — Ker(Разность квадратов чисел)", 
                             command=self.open_2d, accelerator="F5")
 
-        # Меню Справка
         help_menu = tk.Menu(menubar, tearoff=0)
         menubar.add_cascade(label="Справка", menu=help_menu)
         help_menu.add_command(label="Содержание", command=self.show_help, accelerator="F1")
@@ -70,20 +66,6 @@ class MainWindow:
                  width=45, height=3, font=("Arial", 11),
                  command=self.open_2d).pack(pady=12)
 
-    # def create_new_db(self):
-    #     file_path = filedialog.asksaveasfilename(
-    #         defaultextension=".db",
-    #         filetypes=[("Database files", "*.db"), ("All files", "*.*")],
-    #         title="Создать новую базу данных"
-    #     )
-    #     if file_path:
-    #         if os.path.exists("hmm_data.db"):
-    #             shutil.copy("hmm_data.db", file_path)
-    #         else:
-    #             self.current_db = file_path
-    #             init_and_populate_db()  # создаст новую
-    #         self.current_db = file_path
-    #         messagebox.showinfo("Создано", f"Новая БД создана:\n{file_path}")
     def create_new_db(self):
         file_path = filedialog.asksaveasfilename(
             defaultextension=".db",
@@ -95,16 +77,12 @@ class MainWindow:
             return
 
         try:
-            # Если уже существует файл с таким именем — спрашиваем подтверждение
             if os.path.exists(file_path):
                 if not messagebox.askyesno("Файл существует", 
                     f"Файл {os.path.basename(file_path)} уже существует.\nПерезаписать?"):
                     return
 
-            # Создаём новую БД по указанному пути
             self.current_db = file_path
-            
-            # Важно: передаём путь в функцию инициализации
             init_and_populate_db(db_path=file_path)
             
             messagebox.showinfo("Успешно", 
@@ -113,6 +91,7 @@ class MainWindow:
         except Exception as e:
             messagebox.showerror("Ошибка", 
                 f"Не удалось создать базу данных:\n{str(e)}")
+                
     def open_db(self):
         file_path = filedialog.askopenfilename(
             filetypes=[("Database files", "*.db"), ("All files", "*.*")],
