@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-import sqlite3
+import sqlite3,os,webbrowser,math
 from data.hmm_models import get_hmm_color, get_model_legend_info
 
 
@@ -45,7 +45,7 @@ class Form1D(tk.Toplevel):
         tk.Entry(param_frame, textvariable=self.mod_var, width=15).pack(anchor="w", pady=2)
 
         tk.Label(param_frame, text="Количество элементов:").pack(anchor="w", pady=(8,4))
-        self.count_var = tk.IntVar(value=500)
+        self.count_var = tk.IntVar(value=100)
         tk.Entry(param_frame, textvariable=self.count_var, width=15).pack(anchor="w", pady=2)
 
         tk.Label(param_frame, text="Опции:").pack(anchor="w", pady=(12,4))
@@ -181,24 +181,67 @@ class Form1D(tk.Toplevel):
 
         self.canvas.config(scrollregion=(0, 0, total_w, 600))
 
+    # def show_spiral(self):
+    #     self.canvas.delete("all")
+    #     data = self.get_fib_data(self.count_var.get())
+    #     w = self.canvas.winfo_width() or 800
+    #     h = self.canvas.winfo_height() or 600
+    #     cx, cy = w // 2, h // 2
+
+    #     for i, v in enumerate(data):
+    #         color = get_hmm_color(v, self.model_var.get(), self.mod_var.get())
+    #         angle = i * 0.16
+    #         radius = min(w, h) * 0.37 * (0.1 + i / len(data))
+    #         x = cx + radius * (angle ** 0.7)
+    #         y = cy + radius * 0.55
+    #         size = 6.5
+    #         self.canvas.create_oval(x-size, y-size, x+size, y+size, fill=color, outline="")
+
+    #     self.canvas.config(scrollregion=(0, 0, w, h))
+
     def show_spiral(self):
         self.canvas.delete("all")
+
         data = self.get_fib_data(self.count_var.get())
-        w = self.canvas.winfo_width() or 800
-        h = self.canvas.winfo_height() or 600
+
+        w = self.canvas.winfo_width() or 900
+        h = self.canvas.winfo_height() or 700
+
         cx, cy = w // 2, h // 2
 
+        max_radius = min(w, h) * 0.42
+
         for i, v in enumerate(data):
-            color = get_hmm_color(v, self.model_var.get(), self.mod_var.get())
-            angle = i * 0.16
-            radius = min(w, h) * 0.37 * (0.1 + i / len(data))
-            x = cx + radius * (angle ** 0.7)
-            y = cy + radius * 0.55
-            size = 6.5
-            self.canvas.create_oval(x-size, y-size, x+size, y+size, fill=color, outline="")
+
+            color = get_hmm_color(
+                v,
+                self.model_var.get(),
+                self.mod_var.get()
+            )
+
+            # угол
+            angle = i * 0.32
+
+            # радиус
+            radius = max_radius * (i / len(data))
+
+            # координаты спирали
+            x = cx + radius * math.cos(angle)
+            y = cy + radius * math.sin(angle)
+
+            # размер точки зависит от значения
+            size = 4 + (v % 7)
+
+            self.canvas.create_oval(
+                x - size,
+                y - size,
+                x + size,
+                y + size,
+                fill=color,
+                outline=""
+            )
 
         self.canvas.config(scrollregion=(0, 0, w, h))
-
     def show_mosaic(self):
         self.canvas.delete("all")
         data = self.get_fib_data(self.count_var.get())
@@ -217,9 +260,6 @@ class Form1D(tk.Toplevel):
         self.canvas.config(scrollregion=(0, 0, total_w, total_h))
 
     def show_help(self):
-        import webbrowser
-        import os
-
         help_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'help', 'help.html')
         if os.path.exists(help_file):
             webbrowser.open('file:///' + os.path.abspath(help_file))

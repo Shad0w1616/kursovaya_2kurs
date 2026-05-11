@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox
-import sqlite3
+import sqlite3,os,webbrowser,math
 from data.hmm_models import get_hmm_color, get_model_legend_info
 
 
@@ -184,11 +184,21 @@ class Form2D(tk.Toplevel):
                                        fill=color, 
                                        outline="#222222" if self.grid_var.get() else "")
 
-            if self.value_var.get() and cell_w >= 22:
+            if self.value_var.get():
                 text = str(value) if value < 100 else "●"
-                self.canvas.create_text((px1+px2)//2, (py1+py2)//2, 
-                                      text=text, fill="white", font=("Consolas", 8, "bold"))
+                # self.canvas.create_text((px1+px2)//2, (py1+py2)//2, 
+                #                       text=text, fill="white", font=("Consolas", 8, "bold"))
+                brightness = sum(int(color[i:i+2], 16) for i in (1, 3, 5)) / 3
 
+                text_color = "black" if brightness > 140 else "white"
+
+                self.canvas.create_text(
+                    (px1 + px2) // 2,
+                    (py1 + py2) // 2,
+                    text=text,
+                    fill=text_color,
+                    font=("Consolas", 8, "bold")
+                )
         conn.close()
         self.canvas.config(scrollregion=(0, 0, cols*cell_w, (ymax-ymin+1)*cell_h))
 
@@ -198,29 +208,95 @@ class Form2D(tk.Toplevel):
     def show_by_ker(self):
         self.draw_matrix(use_diff=False)
 
+    # def show_spiral_2d(self):
+    #     self.canvas.delete("all")
+    #     w = self.canvas.winfo_width() or 800
+    #     h = self.canvas.winfo_height() or 600
+    #     cx, cy = w // 2, h // 2
+
+    #     conn = sqlite3.connect(self.db_path)
+    #     c = conn.cursor()
+    #     c.execute("SELECT ker FROM ker_diff ORDER BY x, y LIMIT 800")
+    #     data = [row[0] for row in c.fetchall()]
+    #     conn.close()
+
+    #     for i, ker in enumerate(data):
+    #         color = get_hmm_color(ker, self.model_var.get())
+    #         angle = i * 0.17
+    #         radius = min(w, h) * 0.38 * (0.08 + i / max(len(data), 1))
+    #         x = cx + radius * (angle ** 0.68)
+    #         y = cy + radius * 0.57
+    #         size = 6
+    #         self.canvas.create_oval(x-size, y-size, x+size, y+size, fill=color, outline="")
+
+    #     self.canvas.config(scrollregion=(0, 0, w, h))
     def show_spiral_2d(self):
         self.canvas.delete("all")
-        w = self.canvas.winfo_width() or 800
-        h = self.canvas.winfo_height() or 600
+
+        w = self.canvas.winfo_width() or 900
+        h = self.canvas.winfo_height() or 700
+
         cx, cy = w // 2, h // 2
 
         conn = sqlite3.connect(self.db_path)
         c = conn.cursor()
-        c.execute("SELECT ker FROM ker_diff ORDER BY x, y LIMIT 800")
+
+        c.execute("""
+            SELECT ker
+            FROM ker_diff
+            ORDER BY x, y
+            LIMIT 1200
+        """)
+
         data = [row[0] for row in c.fetchall()]
         conn.close()
 
+        if not data:
+            return
+
+        max_radius = min(w, h) * 0.43
+
         for i, ker in enumerate(data):
-            color = get_hmm_color(ker, self.model_var.get())
-            angle = i * 0.17
-            radius = min(w, h) * 0.38 * (0.08 + i / max(len(data), 1))
-            x = cx + radius * (angle ** 0.68)
-            y = cy + radius * 0.57
-            size = 6
-            self.canvas.create_oval(x-size, y-size, x+size, y+size, fill=color, outline="")
+
+            color = get_hmm_color(
+                ker,
+                self.model_var.get(),
+                mod=9,
+                max_val=9
+            )
+
+            # золотой угол
+            angle = i * 2.39996323
+
+            # радиус
+            radius = max_radius * math.sqrt(i / len(data))
+
+            x = cx + radius * math.cos(angle)
+            y = cy + radius * math.sin(angle)
+
+            size = 5 + (ker % 4)
+
+            self.canvas.create_oval(
+                x - size,
+                y - size,
+                x + size,
+                y + size,
+                fill=color,
+                outline=""
+            )
+
+            # отображение значений
+            if self.value_var.get():
+
+                self.canvas.create_text(
+                    x,
+                    y,
+                    text=str(ker),
+                    fill="white",
+                    font=("Consolas", 7, "bold")
+                )
 
         self.canvas.config(scrollregion=(0, 0, w, h))
-
     def show_gradient(self):
         self.canvas.delete("all")
         w = self.canvas.winfo_width() or 800
@@ -239,9 +315,6 @@ class Form2D(tk.Toplevel):
         self.canvas.config(scrollregion=(0, 0, w, h))
 
     def show_help(self):
-        import webbrowser
-        import os
-
         help_file = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'help', 'help.html')
         if os.path.exists(help_file):
             webbrowser.open('file:///' + os.path.abspath(help_file))
