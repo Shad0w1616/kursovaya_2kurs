@@ -155,7 +155,7 @@ class Form2D(tk.Toplevel):
         elif self.current_vis == "Градиентная":
             self.show_gradient()
 
-    def _draw_matrix(self, use_diff=False):
+    def draw_matrix(self, use_diff=False):
         self.canvas.delete("all")
         xmin, xmax = self.xmin_var.get(), self.xmax_var.get()
         ymin, ymax = self.ymin_var.get(), self.ymax_var.get()
@@ -193,10 +193,10 @@ class Form2D(tk.Toplevel):
         self.canvas.config(scrollregion=(0, 0, cols*cell_w, (ymax-ymin+1)*cell_h))
 
     def show_matrix(self):
-        self._draw_matrix(use_diff=True)
+        self.draw_matrix(use_diff=True)
 
     def show_by_ker(self):
-        self._draw_matrix(use_diff=False)
+        self.draw_matrix(use_diff=False)
 
     def show_spiral_2d(self):
         self.canvas.delete("all")

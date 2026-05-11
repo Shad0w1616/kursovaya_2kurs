@@ -13,8 +13,8 @@ def get_hmm_color(value: int, model: str = "НММ_Rainbow", mod: int = 10, max_
         value = value % mod if mod > 1 else value
         t = value / (mod - 1) if mod > 1 else 0.5
         hue = 0.58 + t * 0.25
-        sat = 0.75 + t * 0.25
-        r, g, b = colorsys.hsv_to_rgb(hue, sat, 0.96)
+        saturation = 0.75 + t * 0.25
+        r, g, b = colorsys.hsv_to_rgb(hue, saturation, 0.96)
 
     elif model in ["НММ_Rainbow", "НММ_R"]:
         hue = (value % max_val) / max_val
@@ -25,7 +25,7 @@ def get_hmm_color(value: int, model: str = "НММ_Rainbow", mod: int = 10, max_
 
     return f"#{int(r*255):02x}{int(g*255):02x}{int(b*255):02x}"
 
-def get_model_legend_info(model: str, mod: int = 100):
+def get_model_legend_info(model, mod = 100):
     """Информация для легенды"""
     if model == "НММ_N":
         return {"type": "mono", "name": "НММ_N — Монохромоматематическая по модулю N", "mod": mod}

@@ -95,7 +95,6 @@ class Form1D(tk.Toplevel):
         self.after(300, self.apply_visualization)
 
     def update_legend_panel(self):
-        """Только цветовая полоса без текста и цифр"""
         self.legend_canvas.delete("all")
         model = self.model_var.get()
         mod = self.mod_var.get() if self.mod_var.get() > 0 else 100
